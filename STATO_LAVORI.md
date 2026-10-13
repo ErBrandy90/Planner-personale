@@ -75,7 +75,8 @@ Versione **0.4.1** (13/10/2026): correzioni dei bug 1-5 di questa lista.
 | `884a8ca` | Versione in un solo punto (`package.json`): `tauri.conf.json` la legge da lì, `getVersion()` nell'interfaccia, `scripts/versione.mjs` per il resto, controllo in CI |
 | `0916d9e` | Content Security Policy al posto di `csp: null`, con `devCsp` per lo sviluppo |
 | `70385c8` | Versione 0.4.1: changelog, documentazione, manifest del connettore (release v0.4.1 pubblicata) |
-| (questo commit) | Comando di build firmata verificato (Git Bash) al posto dell'esempio PowerShell, che si bloccava; aggiornamento 0.4.0 → 0.4.1 provato |
+| `1a645ef` | Comando di build firmata verificato (Git Bash) al posto dell'esempio PowerShell, che si bloccava; aggiornamento 0.4.0 → 0.4.1 provato |
+| (questo commit) | Correzioni 0.4.1 verificate nell'app vera: note con Claude Desktop e CSP |
 
 ## 5. Da verificare / aperto
 
@@ -86,9 +87,9 @@ Bug e debolezze emersi dall'audit del 13/10/2026. **Da correggere uno per volta*
    - il frontend tiene la "base" per ogni settimana, salva le note una alla volta e non sostituisce mai testo non ancora salvato;
    - provato in un banco di prova con il connettore simulato: scrittura durante l'aggiunta, salvataggio lento, campo fermo, riga cancellata.
    
-   **Da provare nell'app vera** alla prossima build, con Claude Desktop collegato. Entrerà nella prossima release.
-2. ~~**Note a rischio in `add_weekly_notes`**~~ **corretto il 13/10/2026**: la lettura usa `.optional()?`, quindi un errore ferma l'operazione senza scrivere nulla, e la transazione è esclusiva (`Immediate`) come quella dell'app. La logica è in `append_weekly_notes`, con 3 test Rust. Entrerà nella prossima release (va rigenerato anche il `.dxt`).
-3. ~~**Errori MCP come testo**~~ **corretto il 13/10/2026**: gli strumenti restituiscono `Result<String, String>`, quindi un errore arriva al client come risultato con `isError: true`. Verificato con un test Rust e nel test end-to-end (attività inesistente, data non valida). Entrerà nella prossima release.
+   **Verificato nell'app vera** (0.4.1, con Claude Desktop e il connettore 0.4.1) il 13/10/2026.
+2. ~~**Note a rischio in `add_weekly_notes`**~~ **corretto il 13/10/2026**: la lettura usa `.optional()?`, quindi un errore ferma l'operazione senza scrivere nulla, e la transazione è esclusiva (`Immediate`) come quella dell'app. La logica è in `append_weekly_notes`, con 3 test Rust. Incluso nella 0.4.1.
+3. ~~**Errori MCP come testo**~~ **corretto il 13/10/2026**: gli strumenti restituiscono `Result<String, String>`, quindi un errore arriva al client come risultato con `isError: true`. Verificato con un test Rust e nel test end-to-end (attività inesistente, data non valida). Incluso nella 0.4.1.
 4. ~~**Versione scritta a mano in 5 punti**~~ **corretto il 13/10/2026**:
    - la fonte unica è `package.json`;
    - `tauri.conf.json` usa `"version": "../package.json"` e `App.tsx` usa `getVersion()`;
@@ -101,7 +102,7 @@ Bug e debolezze emersi dall'audit del 13/10/2026. **Da correggere uno per volta*
    - `devCsp` separata per lo sviluppo (stili inline e websocket di Vite);
    - provata nel browser con l'interfaccia vera: nessuna violazione, uno script e uno stile inline di prova correttamente bloccati, e anche lo sviluppo con Vite funziona.
    
-   **Da provare nella finestra Tauri vera** alla prossima build (`npm run tauri dev` e installer).
+   **Verificato nella finestra Tauri vera** (installer 0.4.1) il 13/10/2026: l'app funziona normalmente con la CSP attiva.
 6. **Chiave di firma dell'updater** presente solo sul PC: farne una copia sicura nel gestore di password e valutare di proteggerla meglio.
 7. **Codice su righe lunghissime** (Rust e TSX): passare `cargo fmt` ed eventualmente Prettier.
 8. **Migrazioni del DB ad hoc**, senza `PRAGMA user_version`.
