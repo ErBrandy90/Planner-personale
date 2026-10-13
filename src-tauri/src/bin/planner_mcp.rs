@@ -95,11 +95,11 @@ fn monday(date: NaiveDate) -> NaiveDate {
     date - Duration::days(date.weekday().num_days_from_monday() as i64)
 }
 
-fn result<T: Serialize>(value: Result<T, String>) -> String {
-    match value {
-        Ok(value) => serde_json::to_string_pretty(&value).unwrap_or_else(|e| format!("Errore: {e}")),
-        Err(error) => format!("Errore: {error}"),
-    }
+/// Risultato di uno strumento MCP: JSON leggibile se va bene. Un `Err` arriva al client come
+/// risultato con `isError: true`, così l'assistente capisce che l'operazione non è riuscita.
+fn result<T: Serialize>(value: Result<T, String>) -> Result<String, String> {
+    let value = value.map_err(|error| format!("Errore: {error}"))?;
+    serde_json::to_string_pretty(&value).map_err(|e| format!("Errore: {e}"))
 }
 
 fn clean_title(content: String) -> String {
@@ -113,7 +113,7 @@ impl PlannerMcp {
     }
 
     #[tool(description = "Legge le attività del Planner Settimanale in un intervallo di date. Usalo prima di aggiungere attività per evitare duplicati e per ottenere gli ID necessari a completarle.")]
-    fn list_tasks(&self, Parameters(input): Parameters<ListTasks>) -> String {
+    fn list_tasks(&self, Parameters(input): Parameters<ListTasks>) -> Result<String, String> {
         result((|| {
             let start = input.date_from.as_deref().map(parse_date).transpose()?.unwrap_or_else(|| Local::now().date_naive());
             let end = input.date_to.as_deref().map(parse_date).transpose()?.unwrap_or(start + Duration::days(14));
@@ -128,7 +128,7 @@ impl PlannerMcp {
     }
 
     #[tool(description = "Crea una nuova attività con checkbox nel Planner Settimanale. Chiedi conferma all'utente prima di scrivere se data, testo o orario sono ambigui.")]
-    fn create_task(&self, Parameters(input): Parameters<CreateTask>) -> String {
+    fn create_task(&self, Parameters(input): Parameters<CreateTask>) -> Result<String, String> {
         result((|| {
             let title = input.title.trim();
             if title.is_empty() { return Err("Il testo dell'attività è vuoto".into()); }
@@ -146,7 +146,7 @@ impl PlannerMcp {
     }
 
     #[tool(description = "Segna come completata oppure riapre un'attività del Planner Settimanale usando il suo ID.")]
-    fn set_task_completed(&self, Parameters(input): Parameters<CompleteTask>) -> String {
+    fn set_task_completed(&self, Parameters(input): Parameters<CompleteTask>) -> Result<String, String> {
         result((|| {
             let connection = open_db()?;
             let changed = connection.execute("UPDATE entries SET completed=?1 WHERE id=?2 AND kind='task'", params![input.completed as i64, input.id]).map_err(|e| e.to_string())?;
@@ -156,7 +156,7 @@ impl PlannerMcp {
     }
 
     #[tool(description = "Aggiunge alle note di una settimana gli impegni non ancora collocati in agenda. Usa questa operazione quando manca una data precisa; non creare una task giornaliera inventando una data.")]
-    fn add_weekly_notes(&self, Parameters(input): Parameters<AddWeeklyNotes>) -> String {
+    fn add_weekly_notes(&self, Parameters(input): Parameters<AddWeeklyNotes>) -> Result<String, String> {
         result((|| {
             let date = input.week_of.as_deref().map(parse_date).transpose()?.unwrap_or_else(|| Local::now().date_naive());
             let week_start = monday(date).to_string();
@@ -231,6 +231,14 @@ mod tests {
         append_weekly_notes(&mut c, "2026-10-19", items(&["Commercialista"])).unwrap();
         let saved: String = c.query_row("SELECT content FROM weekly_notes WHERE week_start='2026-10-19'", [], |r| r.get(0)).unwrap();
         assert_eq!(saved, "• Commercialista");
+    }
+    #[test]
+    fn gli_errori_arrivano_al_client_come_errori() {
+        use rmcp::handler::server::tool::IntoCallToolResult;
+        let failed = result::<()>(Err("Attività 99 non trovata".into())).into_call_tool_result().unwrap();
+        assert_eq!(failed.is_error, Some(true));
+        let ok = result(Ok(serde_json::json!({"id": 1}))).into_call_tool_result().unwrap();
+        assert_eq!(ok.is_error, Some(false));
     }
     #[test]
     fn note_non_leggibili_non_vengono_cancellate() {

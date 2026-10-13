@@ -26,7 +26,7 @@ Documentazione nel repo: `README.md` (uso, build, pubblicazione), `docs/DOCUMENT
 npm install
 npm run tauri dev                                               # app in sviluppo
 npm run build                                                   # frontend: TypeScript + Vite
-cargo test --locked --manifest-path src-tauri/Cargo.toml        # 14 test Rust (importazione, note, connettore)
+cargo test --locked --manifest-path src-tauri/Cargo.toml        # 15 test Rust (importazione, note, connettore)
 cargo build --release --locked --bin planner_mcp --manifest-path src-tauri/Cargo.toml
 python tests/test_mcp.py                                        # test end-to-end del connettore MCP
 
@@ -44,7 +44,7 @@ Versione **0.4.0**, funzionante e in uso.
 - Voci, checkbox, orari, note settimanali, temi, esportazione JSON.
 - **0.4.0**: importazione JSON con anteprima e backup; **Aiuto → Controlla aggiornamenti** con pacchetti firmati.
 - Connettore MCP (`planner_mcp.exe`, libreria `rmcp`) per Claude Desktop: `list_tasks`, `create_task`, `set_task_completed`, `add_weekly_notes`.
-- Test: 14 test Rust (importazione, unione delle note, note del connettore) + test MCP end-to-end in Python, su GitHub Actions (Windows).
+- Test: 15 test Rust (importazione, unione delle note, connettore) + test MCP end-to-end in Python, su GitHub Actions (Windows).
 - **Release [v0.4.0](https://github.com/ErBrandy90/Planner-personale/releases/tag/v0.4.0) pubblicata il 13/10/2026**: installer, `.sig`, `latest.json` e `.dxt` 0.4.0. L'endpoint `releases/latest/download/latest.json` risponde.
 - **Attenzione per le prossime release**: GitHub sostituisce gli spazi dei nomi file con punti (`Planner Settimanale_…exe` → `Planner.Settimanale_…exe`). L'`url` in `latest.json` deve usare il nome con il punto.
 - CI GitHub Actions verde (prima esecuzione circa 8 minuti).
@@ -57,7 +57,8 @@ Versione **0.4.0**, funzionante e in uso.
 | `947c249` | Connettore MCP portato alla 0.4.0: `manifest.json` 0.4.0 e nuovo pacchetto `Planner-Settimanale-0.4.0.dxt`, pubblicato nella release v0.4.0 |
 | `1688629` | Registra la pubblicazione della release v0.4.0 e il primo esito verde della CI |
 | `6257732` | Corregge le note sovrascritte: unione delle righe aggiunte dal connettore MCP, salvataggi in fila, cursore fermo |
-| (questo commit) | Connettore: un errore di lettura delle note non le cancella più (`add_weekly_notes`), transazione esclusiva, 3 test |
+| `c05127b` | Connettore: un errore di lettura delle note non le cancella più (`add_weekly_notes`), transazione esclusiva, 3 test |
+| (questo commit) | Connettore: gli errori arrivano al client come errori veri (`isError`), con test |
 
 ## 5. Da verificare / aperto
 
@@ -70,7 +71,7 @@ Bug e debolezze emersi dall'audit del 13/10/2026. **Da correggere uno per volta*
    
    **Da provare nell'app vera** alla prossima build, con Claude Desktop collegato. Entrerà nella prossima release.
 2. ~~**Note a rischio in `add_weekly_notes`**~~ **corretto il 13/10/2026**: la lettura usa `.optional()?`, quindi un errore ferma l'operazione senza scrivere nulla, e la transazione è esclusiva (`Immediate`) come quella dell'app. La logica è in `append_weekly_notes`, con 3 test Rust. Entrerà nella prossima release (va rigenerato anche il `.dxt`).
-3. **Errori MCP come testo**: gli errori tornano come testo "Errore: …" e non come risultato con `isError`, quindi il client non capisce che l'operazione è fallita.
+3. ~~**Errori MCP come testo**~~ **corretto il 13/10/2026**: gli strumenti restituiscono `Result<String, String>`, quindi un errore arriva al client come risultato con `isError: true`. Verificato con un test Rust e nel test end-to-end (attività inesistente, data non valida). Entrerà nella prossima release.
 4. **Versione scritta a mano in 5 punti** (`package.json`, `Cargo.toml`, `tauri.conf.json`, `App.tsx` → `appVersion`, documentazione). In `App.tsx` usare `getVersion()` di `@tauri-apps/api/app`; regola generale: versione in un solo punto.
 5. **`csp: null`** in `tauri.conf.json`: nessuna Content Security Policy.
 6. **Chiave di firma dell'updater** presente solo sul PC: farne una copia sicura nel gestore di password e valutare di proteggerla meglio.

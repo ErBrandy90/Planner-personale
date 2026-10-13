@@ -380,7 +380,7 @@ Il connettore è un processo Rust separato dall'interfaccia. Comunica attraverso
 - Inserire nelle note settimanali gli impegni ancora da programmare.
 - Normalizzare date in `YYYY-MM-DD` e orari in `HH:MM`.
 - Aggiornare le note in una transazione esclusiva (`Immediate`), così lettura e scrittura non si mescolano con un salvataggio dell'app; se le note esistenti non si leggono, fermarsi con un errore senza riscriverle (`append_weekly_notes`, con test Rust).
-- Restituire risultati ed errori in forma leggibile dal client AI.
+- Restituire i risultati come JSON leggibile e gli errori come risultato con `isError: true` (messaggio "Errore: …"), così il client AI sa che l'operazione non è riuscita.
 
 ### 7.4 Test MCP
 
@@ -391,7 +391,8 @@ Il connettore è un processo Rust separato dall'interfaccia. Comunica attraverso
 3. lettura dell'attività;
 4. completamento;
 5. inserimento di note;
-6. riconoscimento del duplicato nelle note.
+6. riconoscimento del duplicato nelle note;
+7. errori restituiti con `isError` (attività inesistente, data non valida).
 
 La variabile `PLANNER_DB_PATH` permette al test di indirizzare il server verso il database temporaneo senza toccare i dati reali.
 

@@ -61,8 +61,16 @@ with tempfile.TemporaryDirectory() as directory:
         notes_data = json.loads(notes["content"][0]["text"])
         assert notes_data["added"] == ["Definire la data della riunione"]
         assert notes_data["already_present"] == ["Definire la data della riunione"]
+        assert not notes.get("isError")
+
+        # Gli errori devono arrivare come errori (isError), non come testo di un risultato riuscito
+        missing = call(process, 6, "set_task_completed", {"id": 999, "completed": True})
+        assert missing.get("isError") is True, missing
+        assert "non trovata" in missing["content"][0]["text"]
+        bad_date = call(process, 7, "create_task", {"title": "Data sbagliata", "date": "13/10/2026"})
+        assert bad_date.get("isError") is True, bad_date
     finally:
         process.terminate()
         process.wait(timeout=5)
 
-print("MCP planner: create, list, complete e weekly notes OK")
+print("MCP planner: create, list, complete, weekly notes ed errori OK")
