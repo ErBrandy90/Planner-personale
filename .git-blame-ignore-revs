@@ -1,0 +1,5 @@
+# Commit di sola formattazione, ignorati da git blame (GitHub lo legge da solo).
+# In locale: git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# cargo fmt e Prettier su tutto il codice
+decf9917590a608743cdf08ed4fe193cc3e9a208
