@@ -1,0 +1,15 @@
+{
+  "identifier": "default",
+  "description": "Planner locale",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "window-state:default",
+    "dialog:allow-save",
+    "dialog:allow-open",
+    "updater:default",
+    "process:allow-restart"
+  ]
+}

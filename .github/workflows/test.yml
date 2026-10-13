@@ -1,0 +1,28 @@
+name: Test
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    # Windows: l'app e il test MCP (percorso planner_mcp.exe) sono pensati per Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      # Frontend: TypeScript + Vite
+      - run: npm run build
+      # Test Rust (importazione JSON)
+      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml
+      # Server MCP e test end-to-end del connettore su database temporaneo
+      - run: cargo build --release --locked --bin planner_mcp --manifest-path src-tauri/Cargo.toml
+      - run: python tests/test_mcp.py

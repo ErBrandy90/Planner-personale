@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.npm-cache/
+src-tauri/target/
+*.log
+
+.signing/
+release-artifacts/
+*.tsbuildinfo
+src-tauri/gen/schemas/
+
+# Binari del connettore: si pubblicano come asset delle Releases, non nella storia git
+mcp-extension/*.dxt
+mcp-extension/server/*.exe
+
+# File personali e segreti, fuori dal codice dell'app
+SERVIZI_E_ACCOUNT.md
+CREDENZIALI_LOCALI.txt
+*.key
+.env
+.env.*
+!.env.example
