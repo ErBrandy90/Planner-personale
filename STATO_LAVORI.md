@@ -60,7 +60,8 @@ Versione **0.4.0**, funzionante e in uso.
 | `6257732` | Corregge le note sovrascritte: unione delle righe aggiunte dal connettore MCP, salvataggi in fila, cursore fermo |
 | `c05127b` | Connettore: un errore di lettura delle note non le cancella più (`add_weekly_notes`), transazione esclusiva, 3 test |
 | `32b8260` | Connettore: gli errori arrivano al client come errori veri (`isError`), con test |
-| (questo commit) | Versione in un solo punto (`package.json`): `tauri.conf.json` la legge da lì, `getVersion()` nell'interfaccia, `scripts/versione.mjs` per il resto, controllo in CI |
+| `884a8ca` | Versione in un solo punto (`package.json`): `tauri.conf.json` la legge da lì, `getVersion()` nell'interfaccia, `scripts/versione.mjs` per il resto, controllo in CI |
+| (questo commit) | Content Security Policy al posto di `csp: null`, con `devCsp` per lo sviluppo |
 
 ## 5. Da verificare / aperto
 
@@ -81,7 +82,12 @@ Bug e debolezze emersi dall'audit del 13/10/2026. **Da correggere uno per volta*
    - `npm run versione` controlla l'allineamento, anche in CI.
    
    Provato portando la versione a 0.4.9 (l'eseguibile compilato riportava 0.4.9) e poi di nuovo a 0.4.0. Restano a mano il changelog in `App.tsx` e la documentazione.
-5. **`csp: null`** in `tauri.conf.json`: nessuna Content Security Policy.
+5. ~~**`csp: null`**~~ **corretto il 13/10/2026**:
+   - CSP stretta (`'self'` + IPC di Tauri, niente inline);
+   - `devCsp` separata per lo sviluppo (stili inline e websocket di Vite);
+   - provata nel browser con l'interfaccia vera: nessuna violazione, uno script e uno stile inline di prova correttamente bloccati, e anche lo sviluppo con Vite funziona.
+   
+   **Da provare nella finestra Tauri vera** alla prossima build (`npm run tauri dev` e installer).
 6. **Chiave di firma dell'updater** presente solo sul PC: farne una copia sicura nel gestore di password e valutare di proteggerla meglio.
 7. **Codice su righe lunghissime** (Rust e TSX): passare `cargo fmt` ed eventualmente Prettier.
 8. **Migrazioni del DB ad hoc**, senza `PRAGMA user_version`.

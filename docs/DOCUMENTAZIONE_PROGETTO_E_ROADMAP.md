@@ -358,6 +358,16 @@ I permessi Tauri attuali (`src-tauri/capabilities/default.json`) autorizzano:
 - il controllo, il download e l'installazione degli aggiornamenti (`updater:default`);
 - il riavvio dell'app dopo l'aggiornamento (`process:allow-restart`).
 
+**Content Security Policy** (`tauri.conf.json` → `app.security`, dal 13/10/2026):
+
+- `csp`, per l'app pubblicata:
+  - l'interfaccia carica script, stili, immagini e font solo dall'app stessa (`'self'`);
+  - parla solo con il backend Rust tramite l'IPC di Tauri (`connect-src ipc: http://ipc.localhost`);
+  - niente script o stili inline, plugin, frame o form verso l'esterno.
+- `devCsp`, solo per `npm run tauri dev`: in più consente gli stili inline e il websocket di Vite (`ws://localhost:1420`), che servono al ricaricamento automatico.
+- Gli stili impostati da React via JavaScript (`style={...}`) non sono bloccati dalla CSP. Gli aggiornamenti vengono scaricati dal lato Rust, quindi non serve aprire `connect-src` verso GitHub.
+- Se in futuro l'interfaccia deve caricare qualcosa da fuori (font, immagini, API), va aggiunto esplicitamente alla direttiva giusta, mai con `csp: null`.
+
 ---
 
 ## 7. Connettore AI tramite MCP
