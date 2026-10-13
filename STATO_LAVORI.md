@@ -13,7 +13,7 @@ Ultimo aggiornamento: **13 ottobre 2026**
 |---|---|
 | Codice | GitHub **pubblico** [ErBrandy90/Planner-personale](https://github.com/ErBrandy90/Planner-personale), ramo `main`. È pubblico perché l'updater scarica `latest.json` dalle Releases senza autenticazione: **mai segreti nella repo** |
 | Aggiornamenti | GitHub Releases: `latest.json`, installer `.exe` e firma `.sig` per ogni versione; endpoint in `src-tauri/tauri.conf.json` |
-| Chiave di firma updater | `.signing/planner.key` (esclusa da git). **Va conservata anche nel gestore di password**: se si perde, le versioni installate non accettano più aggiornamenti |
+| Chiave di firma updater | `.signing/planner.key` (esclusa da git), con una copia nel gestore di password: se si perde, le versioni installate non accettano più aggiornamenti |
 | Installer e firme generati | `release-artifacts/<versione>/` (esclusa da git) |
 | Connettore MCP per Claude Desktop | `mcp-extension/` (`manifest.json` in git; `.dxt` ed `.exe` esclusi, si pubblicano come asset delle Releases) |
 | Database dell'app | `%APPDATA%\it.planner.settimanale\planner.sqlite3`, backup in `backups/` nella stessa cartella |
@@ -78,7 +78,9 @@ Versione **0.4.1** (13/10/2026): correzioni dei bug 1-5 di questa lista.
 | `70385c8` | Versione 0.4.1: changelog, documentazione, manifest del connettore (release v0.4.1 pubblicata) |
 | `1a645ef` | Comando di build firmata verificato (Git Bash) al posto dell'esempio PowerShell, che si bloccava; aggiornamento 0.4.0 → 0.4.1 provato |
 | `c14f602` | Correzioni 0.4.1 verificate nell'app vera: note con Claude Desktop e CSP |
-| (questo commit) | Formattazione: `cargo fmt` e Prettier, `run()` riscritta in modo leggibile con test sull'avvio del database, controllo del formato in CI |
+| `decf991` | Formattazione: `cargo fmt` e Prettier, `run()` riscritta in modo leggibile con test sull'avvio del database, controllo del formato in CI |
+| `e08e934` | `.git-blame-ignore-revs` per il commit di formattazione |
+| (questo commit) | Chiave di firma salvata nel gestore di password; migrazioni, rotazione dei backup e test multipiattaforma spostati tra le implementazioni future |
 
 ## 5. Da verificare / aperto
 
@@ -105,16 +107,21 @@ Bug e debolezze emersi dall'audit del 13/10/2026. **Da correggere uno per volta*
    - provata nel browser con l'interfaccia vera: nessuna violazione, uno script e uno stile inline di prova correttamente bloccati, e anche lo sviluppo con Vite funziona.
    
    **Verificato nella finestra Tauri vera** (installer 0.4.1) il 13/10/2026: l'app funziona normalmente con la CSP attiva.
-6. **Chiave di firma dell'updater** presente solo sul PC: farne una copia sicura nel gestore di password e valutare di proteggerla meglio.
+6. ~~**Chiave di firma dell'updater**~~ **fatto il 13/10/2026**: copia della chiave salvata da Marco nel gestore di password.
 7. ~~**Codice su righe lunghissime**~~ **corretto il 13/10/2026**:
    - Rust formattato con `cargo fmt`; TypeScript e CSS con Prettier (versione fissata, apici singoli, 120 caratteri, solo `src/` e `scripts/`);
    - `run()` in `lib.rs` riscritta a mano: schema SQL in `SCHEMA`, avvio del database in `prepare_database`, con 2 test;
    - `npm run format` riformatta, `npm run format:check` controlla, anche in CI;
    - restano più lunghe di 150 caratteri solo alcune stringhe SQL e le descrizioni degli strumenti MCP, che `rustfmt` non spezza.
-8. **Migrazioni del DB ad hoc**, senza `PRAGMA user_version`.
-9. **Backup senza rotazione**: la cartella `backups/` cresce senza limiti.
-10. **Test**: `tests/test_mcp.py` funziona solo su Windows (percorso `.exe` fisso). Il server MCP ora ha 3 test Rust, solo su `add_weekly_notes`.
 11. ~~**Versione del connettore**~~ risolto il 13/10/2026: rigenerato `Planner-Settimanale-0.4.0.dxt` dal `planner_mcp.exe` della 0.4.0. Il `.dxt` va rigenerato a ogni release in cui cambia il server MCP (zip di `icon.png`, `manifest.json`, `server/planner_mcp.exe`).
+
+## 5b. Implementazioni future
+
+Punti rimandati, da affrontare uno per volta, ognuno con il suo commit e la sua release:
+
+- **Migrazioni del DB ad hoc**, senza `PRAGMA user_version`.
+- **Backup senza rotazione**: la cartella `backups/` cresce senza limiti.
+- **Test**: `tests/test_mcp.py` funziona solo su Windows (percorso `.exe` fisso). Il server MCP ora ha 3 test Rust, solo su `add_weekly_notes`.
 
 ## 6. Decisioni prese (da non rimettere in discussione)
 
