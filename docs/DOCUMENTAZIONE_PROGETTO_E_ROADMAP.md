@@ -379,7 +379,7 @@ Il connettore è un processo Rust separato dall'interfaccia. Comunica attraverso
 - Non inventare una data per un impegno ambiguo.
 - Inserire nelle note settimanali gli impegni ancora da programmare.
 - Normalizzare date in `YYYY-MM-DD` e orari in `HH:MM`.
-- Usare transazioni per l'aggiornamento delle note.
+- Aggiornare le note in una transazione esclusiva (`Immediate`), così lettura e scrittura non si mescolano con un salvataggio dell'app; se le note esistenti non si leggono, fermarsi con un errore senza riscriverle (`append_weekly_notes`, con test Rust).
 - Restituire risultati ed errori in forma leggibile dal client AI.
 
 ### 7.4 Test MCP

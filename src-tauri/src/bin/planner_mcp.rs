@@ -4,7 +4,7 @@ use rmcp::{
     model::{ServerCapabilities, ServerInfo},
     schemars, tool, tool_handler, tool_router, ServerHandler, ServiceExt, transport::stdio,
 };
-use rusqlite::{params, Connection};
+use rusqlite::{params, Connection, OptionalExtension, TransactionBehavior};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -160,25 +160,32 @@ impl PlannerMcp {
         result((|| {
             let date = input.week_of.as_deref().map(parse_date).transpose()?.unwrap_or_else(|| Local::now().date_naive());
             let week_start = monday(date).to_string();
-            let mut connection = open_db()?;
-            let transaction = connection.transaction().map_err(|e| e.to_string())?;
-            let existing: String = transaction.query_row("SELECT content FROM weekly_notes WHERE week_start=?1", [&week_start], |row| row.get(0)).unwrap_or_default();
-            let mut lines: Vec<String> = existing.lines().map(str::to_string).collect();
-            let mut added = Vec::new();
-            let mut skipped = Vec::new();
-            for item in input.items {
-                let clean = item.trim().trim_start_matches(['•','-']).trim();
-                if clean.is_empty() { continue; }
-                let line = format!("• {clean}");
-                if lines.iter().any(|present| present.trim().eq_ignore_ascii_case(&line)) { skipped.push(clean.to_string()); }
-                else { lines.push(line); added.push(clean.to_string()); }
-            }
-            let content = lines.join("\n").trim().to_string();
-            transaction.execute("INSERT INTO weekly_notes(week_start,content) VALUES(?1,?2) ON CONFLICT(week_start) DO UPDATE SET content=excluded.content", params![week_start,content]).map_err(|e| e.to_string())?;
-            transaction.commit().map_err(|e| e.to_string())?;
-            Ok(serde_json::json!({"week_start": week_start, "added": added, "already_present": skipped}))
+            append_weekly_notes(&mut open_db()?, &week_start, input.items)
         })())
     }
+}
+
+/// Aggiunge le righe in fondo alle note della settimana, saltando quelle già presenti.
+/// Se le note esistenti non si leggono, si ferma con un errore invece di riscriverle da zero.
+fn append_weekly_notes(connection: &mut Connection, week_start: &str, items: Vec<String>) -> Result<serde_json::Value, String> {
+    // Transazione esclusiva: lettura e scrittura avvengono senza che l'app salvi le note nel mezzo.
+    let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate).map_err(|e| e.to_string())?;
+    let existing: String = transaction.query_row("SELECT content FROM weekly_notes WHERE week_start=?1", [week_start], |row| row.get(0))
+        .optional().map_err(|e| format!("Note della settimana {week_start} non leggibili, nessuna modifica fatta: {e}"))?.unwrap_or_default();
+    let mut lines: Vec<String> = existing.lines().map(str::to_string).collect();
+    let mut added = Vec::new();
+    let mut skipped = Vec::new();
+    for item in items {
+        let clean = item.trim().trim_start_matches(['•','-']).trim();
+        if clean.is_empty() { continue; }
+        let line = format!("• {clean}");
+        if lines.iter().any(|present| present.trim().eq_ignore_ascii_case(&line)) { skipped.push(clean.to_string()); }
+        else { lines.push(line); added.push(clean.to_string()); }
+    }
+    let content = lines.join("\n").trim().to_string();
+    transaction.execute("INSERT INTO weekly_notes(week_start,content) VALUES(?1,?2) ON CONFLICT(week_start) DO UPDATE SET content=excluded.content", params![week_start,content]).map_err(|e| e.to_string())?;
+    transaction.commit().map_err(|e| e.to_string())?;
+    Ok(serde_json::json!({"week_start": week_start, "added": added, "already_present": skipped}))
 }
 
 #[tool_handler]
@@ -197,4 +204,42 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let service = PlannerMcp::new().serve(stdio()).await?;
     service.waiting().await?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn connection() -> Connection {
+        let c = Connection::open_in_memory().unwrap();
+        c.execute_batch("CREATE TABLE weekly_notes(week_start TEXT PRIMARY KEY,content);").unwrap(); c
+    }
+    fn items(values: &[&str]) -> Vec<String> { values.iter().map(|v| v.to_string()).collect() }
+
+    #[test]
+    fn aggiunge_in_fondo_e_salta_i_duplicati() {
+        let mut c = connection();
+        c.execute("INSERT INTO weekly_notes VALUES('2026-10-12','Spesa'||char(10)||'• Dentista')", []).unwrap();
+        let report = append_weekly_notes(&mut c, "2026-10-12", items(&["dentista", "- Bollo auto", "  "])).unwrap();
+        assert_eq!(report["added"], serde_json::json!(["Bollo auto"]));
+        assert_eq!(report["already_present"], serde_json::json!(["dentista"]));
+        let saved: String = c.query_row("SELECT content FROM weekly_notes", [], |r| r.get(0)).unwrap();
+        assert_eq!(saved, "Spesa\n• Dentista\n• Bollo auto");
+    }
+    #[test]
+    fn settimana_senza_note_crea_la_riga() {
+        let mut c = connection();
+        append_weekly_notes(&mut c, "2026-10-19", items(&["Commercialista"])).unwrap();
+        let saved: String = c.query_row("SELECT content FROM weekly_notes WHERE week_start='2026-10-19'", [], |r| r.get(0)).unwrap();
+        assert_eq!(saved, "• Commercialista");
+    }
+    #[test]
+    fn note_non_leggibili_non_vengono_cancellate() {
+        // Prima della correzione un errore di lettura valeva "note vuote" e la riga veniva riscritta da zero.
+        let mut c = connection();
+        c.execute("INSERT INTO weekly_notes VALUES('2026-10-12', X'00FF')", []).unwrap();
+        let error = append_weekly_notes(&mut c, "2026-10-12", items(&["Nuova"])).unwrap_err();
+        assert!(error.contains("non leggibili"), "{error}");
+        let still: Vec<u8> = c.query_row("SELECT content FROM weekly_notes", [], |r| r.get(0)).unwrap();
+        assert_eq!(still, vec![0x00, 0xFF]);
+    }
 }

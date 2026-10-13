@@ -68,7 +68,7 @@ La release 0.4.0 è la prima che contiene il controllo degli aggiornamenti: l’
 
 ```powershell
 npm run build                                                   # TypeScript + Vite
-cargo test --locked --manifest-path src-tauri/Cargo.toml        # test Rust (importazione, note)
+cargo test --locked --manifest-path src-tauri/Cargo.toml        # test Rust (importazione, note, connettore)
 cargo build --release --locked --bin planner_mcp --manifest-path src-tauri/Cargo.toml
 python tests/test_mcp.py                                        # test end-to-end del connettore MCP
 ```

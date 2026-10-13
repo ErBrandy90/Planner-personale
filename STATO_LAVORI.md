@@ -26,7 +26,7 @@ Documentazione nel repo: `README.md` (uso, build, pubblicazione), `docs/DOCUMENT
 npm install
 npm run tauri dev                                               # app in sviluppo
 npm run build                                                   # frontend: TypeScript + Vite
-cargo test --locked --manifest-path src-tauri/Cargo.toml        # 11 test Rust (importazione e note)
+cargo test --locked --manifest-path src-tauri/Cargo.toml        # 14 test Rust (importazione, note, connettore)
 cargo build --release --locked --bin planner_mcp --manifest-path src-tauri/Cargo.toml
 python tests/test_mcp.py                                        # test end-to-end del connettore MCP
 
@@ -44,7 +44,7 @@ Versione **0.4.0**, funzionante e in uso.
 - Voci, checkbox, orari, note settimanali, temi, esportazione JSON.
 - **0.4.0**: importazione JSON con anteprima e backup; **Aiuto → Controlla aggiornamenti** con pacchetti firmati.
 - Connettore MCP (`planner_mcp.exe`, libreria `rmcp`) per Claude Desktop: `list_tasks`, `create_task`, `set_task_completed`, `add_weekly_notes`.
-- Test: 11 test Rust (importazione e unione delle note) + test MCP end-to-end in Python, su GitHub Actions (Windows).
+- Test: 14 test Rust (importazione, unione delle note, note del connettore) + test MCP end-to-end in Python, su GitHub Actions (Windows).
 - **Release [v0.4.0](https://github.com/ErBrandy90/Planner-personale/releases/tag/v0.4.0) pubblicata il 13/10/2026**: installer, `.sig`, `latest.json` e `.dxt` 0.4.0. L'endpoint `releases/latest/download/latest.json` risponde.
 - **Attenzione per le prossime release**: GitHub sostituisce gli spazi dei nomi file con punti (`Planner Settimanale_…exe` → `Planner.Settimanale_…exe`). L'`url` in `latest.json` deve usare il nome con il punto.
 - CI GitHub Actions verde (prima esecuzione circa 8 minuti).
@@ -56,7 +56,8 @@ Versione **0.4.0**, funzionante e in uso.
 | `b1815a2` | Prima pubblicazione su GitHub della 0.4.0: `.gitignore` e `.gitattributes`, documentazione spostata in `docs/` e aggiornata alla 0.4.0, `STATO_LAVORI.md`, workflow di test |
 | `947c249` | Connettore MCP portato alla 0.4.0: `manifest.json` 0.4.0 e nuovo pacchetto `Planner-Settimanale-0.4.0.dxt`, pubblicato nella release v0.4.0 |
 | `1688629` | Registra la pubblicazione della release v0.4.0 e il primo esito verde della CI |
-| (questo commit) | Corregge le note sovrascritte: unione delle righe aggiunte dal connettore MCP, salvataggi in fila, cursore fermo |
+| `6257732` | Corregge le note sovrascritte: unione delle righe aggiunte dal connettore MCP, salvataggi in fila, cursore fermo |
+| (questo commit) | Connettore: un errore di lettura delle note non le cancella più (`add_weekly_notes`), transazione esclusiva, 3 test |
 
 ## 5. Da verificare / aperto
 
@@ -68,7 +69,7 @@ Bug e debolezze emersi dall'audit del 13/10/2026. **Da correggere uno per volta*
    - provato in un banco di prova con il connettore simulato: scrittura durante l'aggiunta, salvataggio lento, campo fermo, riga cancellata.
    
    **Da provare nell'app vera** alla prossima build, con Claude Desktop collegato. Entrerà nella prossima release.
-2. **Note a rischio in `add_weekly_notes`** (`src-tauri/src/bin/planner_mcp.rs`): `query_row(...).unwrap_or_default()` tratta un errore di lettura come "note vuote" e poi riscrive la riga senza le note esistenti. Va usato `.optional()?`.
+2. ~~**Note a rischio in `add_weekly_notes`**~~ **corretto il 13/10/2026**: la lettura usa `.optional()?`, quindi un errore ferma l'operazione senza scrivere nulla, e la transazione è esclusiva (`Immediate`) come quella dell'app. La logica è in `append_weekly_notes`, con 3 test Rust. Entrerà nella prossima release (va rigenerato anche il `.dxt`).
 3. **Errori MCP come testo**: gli errori tornano come testo "Errore: …" e non come risultato con `isError`, quindi il client non capisce che l'operazione è fallita.
 4. **Versione scritta a mano in 5 punti** (`package.json`, `Cargo.toml`, `tauri.conf.json`, `App.tsx` → `appVersion`, documentazione). In `App.tsx` usare `getVersion()` di `@tauri-apps/api/app`; regola generale: versione in un solo punto.
 5. **`csp: null`** in `tauri.conf.json`: nessuna Content Security Policy.
@@ -76,7 +77,7 @@ Bug e debolezze emersi dall'audit del 13/10/2026. **Da correggere uno per volta*
 7. **Codice su righe lunghissime** (Rust e TSX): passare `cargo fmt` ed eventualmente Prettier.
 8. **Migrazioni del DB ad hoc**, senza `PRAGMA user_version`.
 9. **Backup senza rotazione**: la cartella `backups/` cresce senza limiti.
-10. **Test**: `tests/test_mcp.py` funziona solo su Windows (percorso `.exe` fisso) e il server MCP non ha test Rust.
+10. **Test**: `tests/test_mcp.py` funziona solo su Windows (percorso `.exe` fisso). Il server MCP ora ha 3 test Rust, solo su `add_weekly_notes`.
 11. ~~**Versione del connettore**~~ risolto il 13/10/2026: rigenerato `Planner-Settimanale-0.4.0.dxt` dal `planner_mcp.exe` della 0.4.0. Il `.dxt` va rigenerato a ogni release in cui cambia il server MCP (zip di `icon.png`, `manifest.json`, `server/planner_mcp.exe`).
 
 ## 6. Decisioni prese (da non rimettere in discussione)
