@@ -13,7 +13,8 @@ export async function deleteEntry(id:number):Promise<void>{return invoke('delete
 export async function duplicateEntry(id:number):Promise<Entry>{return invoke('duplicate_entry',{id});}
 export async function moveEntry(id:number,dayDate:string):Promise<Entry>{return invoke('move_entry',{id,dayDate});}
 export async function setEntryTime(id:number,time:string|null):Promise<Entry>{return invoke('set_entry_time',{id,time});}
-export async function saveNotes(weekStart:string,content:string):Promise<void>{return invoke('save_notes',{weekStart,content});}
+// base = note lette dal database prima di modificarle; restituisce il testo salvato, con le eventuali righe aggiunte da fuori
+export async function saveNotes(weekStart:string,content:string,base:string):Promise<string>{return invoke('save_notes',{weekStart,content,base});}
 export async function exportData(path:string):Promise<void>{return invoke('export_data',{path});}
 
 export type ImportPreview={content:string;entries:number;notes:number};

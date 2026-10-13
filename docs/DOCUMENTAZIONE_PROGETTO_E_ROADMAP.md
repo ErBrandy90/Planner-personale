@@ -196,6 +196,7 @@ APP PLANNER/
 ├─ src-tauri/
 │  ├─ src/lib.rs          Database e comandi del programma desktop
 │  ├─ src/importing.rs    Importazione JSON (anteprima, unione) e backup SQLite
+│  ├─ src/notes.rs        Salvataggio delle note con unione delle modifiche esterne
 │  ├─ src/main.rs         Avvio dell'applicazione Tauri
 │  ├─ src/bin/
 │  │  └─ planner_mcp.rs   Server MCP indipendente
@@ -258,11 +259,19 @@ Ogni voce contiene un numero intero `position`. La griglia usa righe alte 33 pix
 
 Il connettore MCP scrive direttamente nello stesso database. Per mostrare queste modifiche senza riavviare il planner:
 
-- il frontend ricarica le voci ogni 3 secondi;
-- ricarica le voci quando la finestra torna in primo piano;
-- le note esterne vengono applicate soltanto se l'utente non sta scrivendo nel campo note.
+- il frontend ricarica voci e note ogni 3 secondi e quando la finestra torna in primo piano;
+- le note lette dal database sostituiscono quelle nel campo solo se nel campo non ci sono modifiche non ancora salvate. Per saperlo, l'app ricorda per ogni settimana la "base", cioè l'ultimo testo letto o salvato nel database;
+- quando il testo esterno arriva mentre il campo è attivo, il cursore resta dove si trovava.
 
-L'ultima regola evita che il polling sostituisca il testo mentre viene digitato.
+**Salvataggio delle note senza perdite** (dalla correzione del 13/10/2026):
+
+- `save_notes` riceve il testo del campo e la base. In una transazione esclusiva confronta la base con il contenuto attuale del database.
+- Se nel frattempo il connettore MCP (o un'importazione) ha aggiunto righe, queste vengono **unite in fondo** al testo dell'utente invece di essere cancellate. Il comando restituisce il testo finale, che l'app mostra nel campo.
+- Le righe che l'utente ha cancellato dal campo e che erano già nella base non ricompaiono.
+- I salvataggi delle note partono uno alla volta. Ognuno usa la base aggiornata dal precedente, così non si creano doppioni se si continua a scrivere durante un salvataggio.
+- Mentre le note della settimana non sono ancora caricate, il campo è in sola lettura.
+
+La logica di unione è in `src-tauri/src/notes.rs`, con i suoi test.
 
 ### 4.5 Persistenza e concorrenza
 
@@ -333,7 +342,7 @@ Il salvataggio usa un'operazione UPSERT: crea la nota se manca oppure aggiorna q
 | `duplicate_entry` | Duplica una voce nello stesso giorno |
 | `move_entry` | Sposta una voce in un altro giorno |
 | `set_entry_time` | Imposta o rimuove l'orario programmato |
-| `save_notes` | Salva le note settimanali |
+| `save_notes` | Salva le note settimanali unendo le righe aggiunte da fuori nel frattempo (vedi §4.4); restituisce il testo salvato |
 | `export_data` | Esporta tutto il database in JSON |
 | `inspect_import` | Legge un file JSON esportato e ne mostra il contenuto prima dell'importazione |
 | `import_data` | Unisce voci e note del file JSON ai dati esistenti, senza sostituirli |
