@@ -208,6 +208,8 @@ APP PLANNER/
 │  ├─ manifest.json       Metadati dell'estensione MCP
 │  ├─ server/             Eseguibile MCP distribuito
 │  └─ *.dxt               Pacchetti installabili in Claude Desktop
+├─ scripts/
+│  └─ versione.mjs        Allinea e controlla il numero di versione (fonte: package.json)
 ├─ tests/
 │  └─ test_mcp.py         Test end-to-end del protocollo MCP
 ├─ docs/
@@ -478,6 +480,8 @@ python tests\test_mcp.py
 ```
 
 ### 9.6 Creazione installer
+
+Prima di una nuova versione: `npm run versione -- X.Y.Z`. La versione si scrive solo in `package.json`: `tauri.conf.json` la legge da lì e l'interfaccia la chiede all'app. Lo script allinea `Cargo.toml`, `Cargo.lock`, `package-lock.json` e il manifest del connettore; la CI controlla che coincidano.
 
 ```powershell
 npm run tauri build

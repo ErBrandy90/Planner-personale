@@ -7,6 +7,7 @@
     "dev": "vite --configLoader runner",
     "build": "tsc -b && vite build --configLoader runner",
     "typecheck": "tsc -b",
+    "versione": "node scripts/versione.mjs",
     "tauri": "tauri"
   },
   "dependencies": {

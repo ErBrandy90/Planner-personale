@@ -26,6 +26,7 @@ Documentazione nel repo: `README.md` (uso, build, pubblicazione), `docs/DOCUMENT
 npm install
 npm run tauri dev                                               # app in sviluppo
 npm run build                                                   # frontend: TypeScript + Vite
+npm run versione -- 0.4.1                                       # nuova versione, allineata ovunque (senza numero: solo controllo)
 cargo test --locked --manifest-path src-tauri/Cargo.toml        # 15 test Rust (importazione, note, connettore)
 cargo build --release --locked --bin planner_mcp --manifest-path src-tauri/Cargo.toml
 python tests/test_mcp.py                                        # test end-to-end del connettore MCP
@@ -58,7 +59,8 @@ Versione **0.4.0**, funzionante e in uso.
 | `1688629` | Registra la pubblicazione della release v0.4.0 e il primo esito verde della CI |
 | `6257732` | Corregge le note sovrascritte: unione delle righe aggiunte dal connettore MCP, salvataggi in fila, cursore fermo |
 | `c05127b` | Connettore: un errore di lettura delle note non le cancella più (`add_weekly_notes`), transazione esclusiva, 3 test |
-| (questo commit) | Connettore: gli errori arrivano al client come errori veri (`isError`), con test |
+| `32b8260` | Connettore: gli errori arrivano al client come errori veri (`isError`), con test |
+| (questo commit) | Versione in un solo punto (`package.json`): `tauri.conf.json` la legge da lì, `getVersion()` nell'interfaccia, `scripts/versione.mjs` per il resto, controllo in CI |
 
 ## 5. Da verificare / aperto
 
@@ -72,7 +74,13 @@ Bug e debolezze emersi dall'audit del 13/10/2026. **Da correggere uno per volta*
    **Da provare nell'app vera** alla prossima build, con Claude Desktop collegato. Entrerà nella prossima release.
 2. ~~**Note a rischio in `add_weekly_notes`**~~ **corretto il 13/10/2026**: la lettura usa `.optional()?`, quindi un errore ferma l'operazione senza scrivere nulla, e la transazione è esclusiva (`Immediate`) come quella dell'app. La logica è in `append_weekly_notes`, con 3 test Rust. Entrerà nella prossima release (va rigenerato anche il `.dxt`).
 3. ~~**Errori MCP come testo**~~ **corretto il 13/10/2026**: gli strumenti restituiscono `Result<String, String>`, quindi un errore arriva al client come risultato con `isError: true`. Verificato con un test Rust e nel test end-to-end (attività inesistente, data non valida). Entrerà nella prossima release.
-4. **Versione scritta a mano in 5 punti** (`package.json`, `Cargo.toml`, `tauri.conf.json`, `App.tsx` → `appVersion`, documentazione). In `App.tsx` usare `getVersion()` di `@tauri-apps/api/app`; regola generale: versione in un solo punto.
+4. ~~**Versione scritta a mano in 5 punti**~~ **corretto il 13/10/2026**:
+   - la fonte unica è `package.json`;
+   - `tauri.conf.json` usa `"version": "../package.json"` e `App.tsx` usa `getVersion()`;
+   - `npm run versione -- X.Y.Z` allinea `Cargo.toml`, `Cargo.lock`, `package-lock.json` e `mcp-extension/manifest.json`;
+   - `npm run versione` controlla l'allineamento, anche in CI.
+   
+   Provato portando la versione a 0.4.9 (l'eseguibile compilato riportava 0.4.9) e poi di nuovo a 0.4.0. Restano a mano il changelog in `App.tsx` e la documentazione.
 5. **`csp: null`** in `tauri.conf.json`: nessuna Content Security Policy.
 6. **Chiave di firma dell'updater** presente solo sul PC: farne una copia sicura nel gestore di password e valutare di proteggerla meglio.
 7. **Codice su righe lunghissime** (Rust e TSX): passare `cargo fmt` ed eventualmente Prettier.
@@ -87,4 +95,5 @@ Bug e debolezze emersi dall'audit del 13/10/2026. **Da correggere uno per volta*
 - Le integrazioni AI passano da MCP; le operazioni ambigue non inventano date o orari.
 - Aggiornamenti tramite GitHub Releases su repo pubblica, con pacchetti firmati; nella app solo la chiave pubblica.
 - Binari (`.exe`, `.dxt`, installer) fuori dalla storia git: si pubblicano come asset delle Releases.
+- Numero di versione solo in `package.json`; gli altri file si allineano con `npm run versione -- X.Y.Z`, mai a mano.
 - Altre decisioni di progetto: `docs/DOCUMENTAZIONE_PROGETTO_E_ROADMAP.md` §17.

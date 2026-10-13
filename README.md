@@ -44,6 +44,12 @@ Consulta [`docs/MCP_CLAUDE.md`](docs/MCP_CLAUDE.md) per l'installazione e gli es
 
 ## Pubblicare una versione per l’updater
 
+**Numero di versione:** si cambia in un solo comando, `npm run versione -- 0.4.1`.
+- La fonte è `package.json`. `tauri.conf.json` la legge da lì e l'interfaccia la chiede all'app (`getVersion()`).
+- Lo script allinea anche `Cargo.toml`, `Cargo.lock`, `package-lock.json` e il manifest del connettore.
+- `npm run versione` senza argomenti controlla che tutto coincida, e lo fa anche la CI.
+- Restano a mano il changelog in `src/App.tsx` e la documentazione.
+
 Ogni build produce l’installer NSIS `.exe`. Per produrre anche la firma `.sig`, imposta `TAURI_SIGNING_PRIVATE_KEY` al percorso della chiave privata conservata in `.signing/planner.key` e lancia `npm run tauri build`. **Non pubblicare la chiave privata** e conservarne una copia sicura: senza quella chiave le versioni già installate non potranno verificare aggiornamenti futuri. La cartella `.signing/` è esclusa da Git.
 
 Esempio PowerShell per le build future:

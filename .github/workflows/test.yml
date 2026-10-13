@@ -19,6 +19,8 @@ jobs:
         with:
           workspaces: src-tauri
       - run: npm ci
+      # Versione in un solo punto (package.json): Cargo.toml, Cargo.lock e manifest del connettore devono coincidere
+      - run: npm run versione
       # Frontend: TypeScript + Vite
       - run: npm run build
       # Test Rust (importazione JSON)
