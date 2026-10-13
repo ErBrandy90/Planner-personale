@@ -13,6 +13,7 @@ type ThemePreference='light'|'dark'|'system';
 type DialogName='about'|'changelog'|null;
 
 const changes=[
+  {version:'0.4.1',items:['Le note non si perdono più se il connettore AI aggiunge impegni mentre stai scrivendo','Il connettore AI segnala gli errori come errori e non tocca note che non riesce a leggere',"Protezione dell'interfaccia con una Content Security Policy","Il numero di versione viene letto dall'app"]},
   {version:'0.4.0',items:['Importazione JSON con anteprima, unione dei dati e backup automatico','Controllo e installazione degli aggiornamenti dal menu Aiuto','Pacchetti di aggiornamento firmati e installer per ogni versione']},
   {version:'0.3.1',items:['Migliorato il contrasto dei colori nelle intestazioni del tema scuro']},
   {version:'0.3.0',items:['Barra dei menu con Informazioni e Changelog','Temi chiaro, scuro e sistema','Il connettore MCP può aggiungere impegni alle note settimanali']},

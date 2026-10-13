@@ -39,7 +39,7 @@ npm run tauri build
 
 ## 3. Stato
 
-Versione **0.4.0**, funzionante e in uso.
+Versione **0.4.1** (13/10/2026): correzioni dei bug 1-5 di questa lista.
 
 - Planner settimanale offline (Tauri 2 + React + Rust + SQLite), installer NSIS offline con WebView2.
 - Voci, checkbox, orari, note settimanali, temi, esportazione JSON.
@@ -61,7 +61,8 @@ Versione **0.4.0**, funzionante e in uso.
 | `c05127b` | Connettore: un errore di lettura delle note non le cancella più (`add_weekly_notes`), transazione esclusiva, 3 test |
 | `32b8260` | Connettore: gli errori arrivano al client come errori veri (`isError`), con test |
 | `884a8ca` | Versione in un solo punto (`package.json`): `tauri.conf.json` la legge da lì, `getVersion()` nell'interfaccia, `scripts/versione.mjs` per il resto, controllo in CI |
-| (questo commit) | Content Security Policy al posto di `csp: null`, con `devCsp` per lo sviluppo |
+| `0916d9e` | Content Security Policy al posto di `csp: null`, con `devCsp` per lo sviluppo |
+| (questo commit) | Versione 0.4.1: changelog, documentazione, manifest del connettore |
 
 ## 5. Da verificare / aperto
 

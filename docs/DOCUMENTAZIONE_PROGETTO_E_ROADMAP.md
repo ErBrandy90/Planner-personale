@@ -444,6 +444,13 @@ La variabile `PLANNER_DB_PATH` permette al test di indirizzare il server verso i
 - Menu Aiuto → Controlla aggiornamenti, download e installazione di pacchetti firmati.
 - Installer `.exe` e firma `.sig` per ogni build firmata.
 
+### Versione 0.4.1
+
+- Note settimanali senza perdite: le righe aggiunte dal connettore MCP durante la scrittura vengono unite, non cancellate (§4.4).
+- Connettore MCP: un errore di lettura non cancella più le note; gli errori arrivano al client con `isError`.
+- Content Security Policy per l'interfaccia (§6).
+- Versione in un solo punto (`package.json`, `npm run versione`).
+
 ---
 
 ## 9. Compilazione e verifica
