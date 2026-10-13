@@ -52,13 +52,17 @@ Consulta [`docs/MCP_CLAUDE.md`](docs/MCP_CLAUDE.md) per l'installazione e gli es
 
 Ogni build produce l’installer NSIS `.exe`. Per produrre anche la firma `.sig`, imposta `TAURI_SIGNING_PRIVATE_KEY` al percorso della chiave privata conservata in `.signing/planner.key` e lancia `npm run tauri build`. **Non pubblicare la chiave privata** e conservarne una copia sicura: senza quella chiave le versioni già installate non potranno verificare aggiornamenti futuri. La cartella `.signing/` è esclusa da Git.
 
-Esempio PowerShell per le build future:
+Comando per le build future (verificato):
 
-```powershell
-$env:TAURI_SIGNING_PRIVATE_KEY = (Resolve-Path '.signing\planner.key').Path
-$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = ''
-npm run tauri build
+```bash
+# da Git Bash, nella cartella del progetto
+TAURI_SIGNING_PRIVATE_KEY="$(cat .signing/planner.key)" TAURI_SIGNING_PRIVATE_KEY_PASSWORD= npm run tauri build
 ```
+
+Attenzione, due trappole verificate il 13/10/2026:
+
+- **Non usare Windows PowerShell 5.1:** `$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = ''` *cancella* la variabile invece di lasciarla vuota. Tauri allora si ferma ad aspettare una password che nessuno scrive.
+- **Passare il contenuto della chiave, non un percorso relativo:** `.signing/planner.key` viene letto come se fosse la chiave stessa, e la firma fallisce con "Invalid symbol 46".
 
 Per ogni versione da distribuire, carica sulla release GitHub l’installer `.exe`, il suo `.sig` e un `latest.json` con versione, note, URL HTTPS dell’installer e contenuto testuale della firma per `windows-x86_64`. Il repository deve rendere questi file scaricabili senza autenticazione. Una build locale crea l’`.exe` anche quando non viene pubblicata come aggiornamento.
 

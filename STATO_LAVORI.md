@@ -30,12 +30,21 @@ npm run versione -- 0.4.1                                       # nuova versione
 cargo test --locked --manifest-path src-tauri/Cargo.toml        # 15 test Rust (importazione, note, connettore)
 cargo build --release --locked --bin planner_mcp --manifest-path src-tauri/Cargo.toml
 python tests/test_mcp.py                                        # test end-to-end del connettore MCP
-
-# Build firmata (installer + .sig per l'updater)
-$env:TAURI_SIGNING_PRIVATE_KEY = (Resolve-Path '.signing\planner.key').Path
-$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = ''
-npm run tauri build
 ```
+
+Build firmata (installer + `.sig` per l'updater), **da Git Bash**. In PowerShell 5.1 la password vuota non funziona: vedi il README.
+
+```bash
+TAURI_SIGNING_PRIVATE_KEY="$(cat .signing/planner.key)" TAURI_SIGNING_PRIVATE_KEY_PASSWORD= npm run tauri build
+```
+
+Per pubblicare una release:
+1. `npm run versione -- X.Y.Z`, aggiornare il changelog in `App.tsx` e la documentazione.
+2. Fare la build firmata.
+3. Copiare installer e `.sig` in `release-artifacts/X.Y.Z/`.
+4. Rigenerare il `.dxt` se il connettore è cambiato.
+5. Scrivere `latest.json`, con l'URL che usa `Planner.Settimanale_…` (il punto al posto dello spazio).
+6. `gh release create vX.Y.Z … --latest`.
 
 ## 3. Stato
 
@@ -46,7 +55,10 @@ Versione **0.4.1** (13/10/2026): correzioni dei bug 1-5 di questa lista.
 - **0.4.0**: importazione JSON con anteprima e backup; **Aiuto → Controlla aggiornamenti** con pacchetti firmati.
 - Connettore MCP (`planner_mcp.exe`, libreria `rmcp`) per Claude Desktop: `list_tasks`, `create_task`, `set_task_completed`, `add_weekly_notes`.
 - Test: 15 test Rust (importazione, unione delle note, connettore) + test MCP end-to-end in Python, su GitHub Actions (Windows).
-- **Release [v0.4.0](https://github.com/ErBrandy90/Planner-personale/releases/tag/v0.4.0) pubblicata il 13/10/2026**: installer, `.sig`, `latest.json` e `.dxt` 0.4.0. L'endpoint `releases/latest/download/latest.json` risponde.
+- **Release [v0.4.1](https://github.com/ErBrandy90/Planner-personale/releases/tag/v0.4.1) pubblicata il 13/10/2026**: installer, `.sig`, `latest.json` e `.dxt` 0.4.1.
+  - **Aggiornamento dall'app provato con successo** sul PC (0.4.0 → 0.4.1): l'app ha fatto il backup del database, si è aggiornata e ora mostra 0.4.1.
+  - Le copie pubblicate stanno in `release-artifacts/0.4.1/`. In `src-tauri/target/…/nsis` può esserci una build successiva, non pubblicata.
+- Release [v0.4.0](https://github.com/ErBrandy90/Planner-personale/releases/tag/v0.4.0) pubblicata il 13/10/2026: installer, `.sig`, `latest.json` e `.dxt` 0.4.0. L'endpoint `releases/latest/download/latest.json` risponde.
 - **Attenzione per le prossime release**: GitHub sostituisce gli spazi dei nomi file con punti (`Planner Settimanale_…exe` → `Planner.Settimanale_…exe`). L'`url` in `latest.json` deve usare il nome con il punto.
 - CI GitHub Actions verde (prima esecuzione circa 8 minuti).
 
@@ -62,7 +74,8 @@ Versione **0.4.1** (13/10/2026): correzioni dei bug 1-5 di questa lista.
 | `32b8260` | Connettore: gli errori arrivano al client come errori veri (`isError`), con test |
 | `884a8ca` | Versione in un solo punto (`package.json`): `tauri.conf.json` la legge da lì, `getVersion()` nell'interfaccia, `scripts/versione.mjs` per il resto, controllo in CI |
 | `0916d9e` | Content Security Policy al posto di `csp: null`, con `devCsp` per lo sviluppo |
-| (questo commit) | Versione 0.4.1: changelog, documentazione, manifest del connettore |
+| `70385c8` | Versione 0.4.1: changelog, documentazione, manifest del connettore (release v0.4.1 pubblicata) |
+| (questo commit) | Comando di build firmata verificato (Git Bash) al posto dell'esempio PowerShell, che si bloccava; aggiornamento 0.4.0 → 0.4.1 provato |
 
 ## 5. Da verificare / aperto
 
