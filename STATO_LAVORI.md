@@ -45,13 +45,17 @@ Versione **0.4.0**, funzionante e in uso.
 - **0.4.0**: importazione JSON con anteprima e backup; **Aiuto → Controlla aggiornamenti** con pacchetti firmati.
 - Connettore MCP (`planner_mcp.exe`, libreria `rmcp`) per Claude Desktop: `list_tasks`, `create_task`, `set_task_completed`, `add_weekly_notes`.
 - Test: 5 test Rust sull'importazione + test MCP end-to-end in Python, su GitHub Actions (Windows).
+- **Release [v0.4.0](https://github.com/ErBrandy90/Planner-personale/releases/tag/v0.4.0) pubblicata il 13/10/2026**: installer, `.sig`, `latest.json` e `.dxt` 0.4.0. L'endpoint `releases/latest/download/latest.json` risponde.
+- **Attenzione per le prossime release**: GitHub sostituisce gli spazi dei nomi file con punti (`Planner Settimanale_…exe` → `Planner.Settimanale_…exe`). L'`url` in `latest.json` deve usare il nome con il punto.
+- CI GitHub Actions verde (prima esecuzione circa 8 minuti).
 
 ## 4. Cronologia delle modifiche
 
 | Commit | Cosa |
 |---|---|
 | `b1815a2` | Prima pubblicazione su GitHub della 0.4.0: `.gitignore` e `.gitattributes`, documentazione spostata in `docs/` e aggiornata alla 0.4.0, `STATO_LAVORI.md`, workflow di test |
-| (questo commit) | Connettore MCP portato alla 0.4.0: `manifest.json` 0.4.0 e nuovo pacchetto `Planner-Settimanale-0.4.0.dxt`, da pubblicare nella release v0.4.0 |
+| `947c249` | Connettore MCP portato alla 0.4.0: `manifest.json` 0.4.0 e nuovo pacchetto `Planner-Settimanale-0.4.0.dxt`, pubblicato nella release v0.4.0 |
+| (questo commit) | Registra la pubblicazione della release v0.4.0 e il primo esito verde della CI |
 
 ## 5. Da verificare / aperto
 
