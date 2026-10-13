@@ -50,7 +50,8 @@ Versione **0.4.0**, funzionante e in uso.
 
 | Commit | Cosa |
 |---|---|
-| (primo commit) | Prima pubblicazione su GitHub della 0.4.0: `.gitignore` e `.gitattributes`, documentazione spostata in `docs/` e aggiornata alla 0.4.0, `STATO_LAVORI.md`, workflow di test |
+| `b1815a2` | Prima pubblicazione su GitHub della 0.4.0: `.gitignore` e `.gitattributes`, documentazione spostata in `docs/` e aggiornata alla 0.4.0, `STATO_LAVORI.md`, workflow di test |
+| (questo commit) | Connettore MCP portato alla 0.4.0: `manifest.json` 0.4.0 e nuovo pacchetto `Planner-Settimanale-0.4.0.dxt`, da pubblicare nella release v0.4.0 |
 
 ## 5. Da verificare / aperto
 
@@ -66,7 +67,7 @@ Bug e debolezze emersi dall'audit del 13/10/2026. **Da correggere uno per volta*
 8. **Migrazioni del DB ad hoc**, senza `PRAGMA user_version`.
 9. **Backup senza rotazione**: la cartella `backups/` cresce senza limiti.
 10. **Test**: `tests/test_mcp.py` funziona solo su Windows (percorso `.exe` fisso) e il server MCP non ha test Rust.
-11. **Versione del connettore**: `mcp-extension/manifest.json` dice 0.3.1, ma in cartella ci sono solo i `.dxt` 0.1.0, 0.2.0 e 0.3.0. Decidere quale `.dxt` pubblicare (o rigenerarlo).
+11. ~~**Versione del connettore**~~ risolto il 13/10/2026: rigenerato `Planner-Settimanale-0.4.0.dxt` dal `planner_mcp.exe` della 0.4.0. Il `.dxt` va rigenerato a ogni release in cui cambia il server MCP (zip di `icon.png`, `manifest.json`, `server/planner_mcp.exe`).
 
 ## 6. Decisioni prese (da non rimettere in discussione)
 

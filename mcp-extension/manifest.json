@@ -2,7 +2,7 @@
   "dxt_version": "0.1",
   "name": "planner-settimanale",
   "display_name": "Planner Settimanale",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Permette agli assistenti AI di leggere, creare e completare attività e aggiornare le note del Planner Settimanale locale.",
   "long_description": "Connettore locale per il Planner Settimanale. Espone le operazioni necessarie sulle attività e permette di annotare gli impegni non ancora collocati in agenda. I dati restano nel database SQLite locale.",
   "author": {
