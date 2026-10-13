@@ -8,6 +8,8 @@
     "build": "tsc -b && vite build --configLoader runner",
     "typecheck": "tsc -b",
     "versione": "node scripts/versione.mjs",
+    "format": "prettier --write src scripts && cargo fmt --manifest-path src-tauri/Cargo.toml",
+    "format:check": "prettier --check src scripts && cargo fmt --manifest-path src-tauri/Cargo.toml --check",
     "tauri": "tauri"
   },
   "dependencies": {
@@ -22,6 +24,7 @@
     "@tauri-apps/cli": "^2.11.1",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "prettier": "3.9.10",
     "typescript": "~5.9.2",
     "vite": "^7.1.0"
   }

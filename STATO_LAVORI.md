@@ -27,7 +27,8 @@ npm install
 npm run tauri dev                                               # app in sviluppo
 npm run build                                                   # frontend: TypeScript + Vite
 npm run versione -- 0.4.1                                       # nuova versione, allineata ovunque (senza numero: solo controllo)
-cargo test --locked --manifest-path src-tauri/Cargo.toml        # 15 test Rust (importazione, note, connettore)
+npm run format                                                  # formatta TypeScript/CSS (Prettier) e Rust (cargo fmt); format:check per controllare
+cargo test --locked --manifest-path src-tauri/Cargo.toml        # 17 test Rust (importazione, note, avvio database, connettore)
 cargo build --release --locked --bin planner_mcp --manifest-path src-tauri/Cargo.toml
 python tests/test_mcp.py                                        # test end-to-end del connettore MCP
 ```
@@ -54,7 +55,7 @@ Versione **0.4.1** (13/10/2026): correzioni dei bug 1-5 di questa lista.
 - Voci, checkbox, orari, note settimanali, temi, esportazione JSON.
 - **0.4.0**: importazione JSON con anteprima e backup; **Aiuto → Controlla aggiornamenti** con pacchetti firmati.
 - Connettore MCP (`planner_mcp.exe`, libreria `rmcp`) per Claude Desktop: `list_tasks`, `create_task`, `set_task_completed`, `add_weekly_notes`.
-- Test: 15 test Rust (importazione, unione delle note, connettore) + test MCP end-to-end in Python, su GitHub Actions (Windows).
+- Test: 17 test Rust (importazione, unione delle note, avvio del database, connettore) + test MCP end-to-end in Python, su GitHub Actions (Windows).
 - **Release [v0.4.1](https://github.com/ErBrandy90/Planner-personale/releases/tag/v0.4.1) pubblicata il 13/10/2026**: installer, `.sig`, `latest.json` e `.dxt` 0.4.1.
   - **Aggiornamento dall'app provato con successo** sul PC (0.4.0 → 0.4.1): l'app ha fatto il backup del database, si è aggiornata e ora mostra 0.4.1.
   - Le copie pubblicate stanno in `release-artifacts/0.4.1/`. In `src-tauri/target/…/nsis` può esserci una build successiva, non pubblicata.
@@ -76,7 +77,8 @@ Versione **0.4.1** (13/10/2026): correzioni dei bug 1-5 di questa lista.
 | `0916d9e` | Content Security Policy al posto di `csp: null`, con `devCsp` per lo sviluppo |
 | `70385c8` | Versione 0.4.1: changelog, documentazione, manifest del connettore (release v0.4.1 pubblicata) |
 | `1a645ef` | Comando di build firmata verificato (Git Bash) al posto dell'esempio PowerShell, che si bloccava; aggiornamento 0.4.0 → 0.4.1 provato |
-| (questo commit) | Correzioni 0.4.1 verificate nell'app vera: note con Claude Desktop e CSP |
+| `c14f602` | Correzioni 0.4.1 verificate nell'app vera: note con Claude Desktop e CSP |
+| (questo commit) | Formattazione: `cargo fmt` e Prettier, `run()` riscritta in modo leggibile con test sull'avvio del database, controllo del formato in CI |
 
 ## 5. Da verificare / aperto
 
@@ -104,7 +106,11 @@ Bug e debolezze emersi dall'audit del 13/10/2026. **Da correggere uno per volta*
    
    **Verificato nella finestra Tauri vera** (installer 0.4.1) il 13/10/2026: l'app funziona normalmente con la CSP attiva.
 6. **Chiave di firma dell'updater** presente solo sul PC: farne una copia sicura nel gestore di password e valutare di proteggerla meglio.
-7. **Codice su righe lunghissime** (Rust e TSX): passare `cargo fmt` ed eventualmente Prettier.
+7. ~~**Codice su righe lunghissime**~~ **corretto il 13/10/2026**:
+   - Rust formattato con `cargo fmt`; TypeScript e CSS con Prettier (versione fissata, apici singoli, 120 caratteri, solo `src/` e `scripts/`);
+   - `run()` in `lib.rs` riscritta a mano: schema SQL in `SCHEMA`, avvio del database in `prepare_database`, con 2 test;
+   - `npm run format` riformatta, `npm run format:check` controlla, anche in CI;
+   - restano più lunghe di 150 caratteri solo alcune stringhe SQL e le descrizioni degli strumenti MCP, che `rustfmt` non spezza.
 8. **Migrazioni del DB ad hoc**, senza `PRAGMA user_version`.
 9. **Backup senza rotazione**: la cartella `backups/` cresce senza limiti.
 10. **Test**: `tests/test_mcp.py` funziona solo su Windows (percorso `.exe` fisso). Il server MCP ora ha 3 test Rust, solo su `add_weekly_notes`.

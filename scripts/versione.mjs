@@ -58,4 +58,6 @@ if (diverse.size !== 1) {
   console.error('Allinea con: npm run versione -- <versione>');
   process.exit(1);
 }
-console.log(`Versione ${[...diverse][0]} allineata in ${Object.keys(trovate).length} punti (+ tauri.conf.json da package.json).`);
+console.log(
+  `Versione ${[...diverse][0]} allineata in ${Object.keys(trovate).length} punti (+ tauri.conf.json da package.json).`,
+);

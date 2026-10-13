@@ -21,6 +21,8 @@ jobs:
       - run: npm ci
       # Versione in un solo punto (package.json): Cargo.toml, Cargo.lock e manifest del connettore devono coincidere
       - run: npm run versione
+      # Formato del codice: Prettier (TypeScript, CSS) e rustfmt (Rust)
+      - run: npm run format:check
       # Frontend: TypeScript + Vite
       - run: npm run build
       # Test Rust (importazione JSON)
