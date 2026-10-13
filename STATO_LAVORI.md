@@ -121,7 +121,7 @@ Punti rimandati, da affrontare uno per volta, ognuno con il suo commit e la sua 
 
 - **Migrazioni del DB ad hoc**, senza `PRAGMA user_version`.
 - **Backup senza rotazione**: la cartella `backups/` cresce senza limiti.
-- **Test**: `tests/test_mcp.py` funziona solo su Windows (percorso `.exe` fisso). Il server MCP ora ha 3 test Rust, solo su `add_weekly_notes`.
+- **Test**: `tests/test_mcp.py` funziona solo su Windows (percorso `.exe` fisso). Il server MCP ha 4 test Rust (note e gestione degli errori).
 
 ## 6. Decisioni prese (da non rimettere in discussione)
 
